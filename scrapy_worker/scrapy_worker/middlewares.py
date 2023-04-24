@@ -39,13 +39,12 @@ class ScrapyWorkerSpiderMiddleware:
         # it has processed the response.
         for item in result:
             if isinstance(item, dict):
-                url = item['url']
-                request = Request(url)
+                request = Request(item['url'], method='GET')
                 request_fingerprint = fingerprint(request)
                 seen = spider.redis_req_conn.get(request_fingerprint)
                 if not seen:
                     spider.logger.info(" [+] Pushing to queue")
-                    spider.redis_req_conn.rpush('queue:requests', json.dumps({"url": url, "meta":{"domain":urlparse(url).netloc}}))
+                    spider.redis_req_conn.rpush('queue:requests', json.dumps(item))
                 else:
                     spider.logger.info(" [+] Request seen")
             yield item
@@ -168,3 +167,33 @@ class RedisMiddleware:
             raise IgnoreRequest()
         self.redis_req_conn.set(request_fingerprint, request.url, ex=1800)
         return None
+
+
+    def process_response(self, request, response, spider):
+        job_id = request.meta['job_id']
+        stats = self.bytes_to_str(self.redis_resp_conn.get(job_id))
+        updated_count = self.update_count(stats['pages_count'])
+        self.redis_resp_conn.set(job_id, json.dumps({"pages_count":updated_count, "domain": stats['domain']}), ex=1800)
+        return response
+
+
+    def update_count(self, count):
+        count +=1
+        return count
+    
+
+    def bytes_to_str(self, obj):
+        if isinstance(obj, bytes):
+            obj = obj.decode('utf-8')
+        if isinstance(obj, str):
+            if self.is_dict(obj):
+                obj = json.loads(obj)
+        return obj
+        
+
+    def is_dict(self, string_content):
+        try:
+            json.loads(string_content)
+        except json.JSONDecodeError:
+            return False
+        return True

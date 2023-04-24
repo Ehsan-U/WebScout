@@ -6,6 +6,7 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import logging
 
 BOT_NAME = "scrapy_worker"
 
@@ -60,6 +61,9 @@ REDIS_REQ_PORT = 6379
 REDIS_RESP_HOST = 'localhost'
 REDIS_RESP_PORT = 6380
 
+LOG_LEVEL=logging.DEBUG
+# LOG_FILE='logs.log'
+POST_PROCESSING = False
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 #EXTENSIONS = {
