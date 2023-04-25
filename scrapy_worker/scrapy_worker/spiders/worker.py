@@ -10,7 +10,6 @@ from scrapy_redis.utils import bytes_to_str
 
 class WebScout(RedisSpider):
     name = 'worker_spider'
-    redis_key = 'queue:requests'
 
     def parse(self, response, **kwargs):
         domain = response.meta.get('domain')

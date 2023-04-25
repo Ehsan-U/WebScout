@@ -7,23 +7,29 @@ from scrapy import signals
 
 # useful for handling different item types with a single interface
 import redis as redis
+import json
+from utils import get_mongo
+from scrapy_redis.connection import get_redis
+from scrapy.http import Request
 from scrapy.utils.request import fingerprint
 from scrapy.exceptions import IgnoreRequest
-import json
-from urllib.parse import urlparse
-from scrapy import Request
-
 
 
 class ScrapyWorkerSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
+    def __init__(self, REDIS_START_URLS_KEY, MONGO_COLLECTION):
+        self.redis_conn = get_redis()
+        self.REDIS_START_URLS_KEY = REDIS_START_URLS_KEY
+        self.collection = MONGO_COLLECTION
 
     @classmethod
     def from_crawler(cls, crawler):
         # This method is used by Scrapy to create your spiders.
-        s = cls()
+        REDIS_START_URLS_KEY = crawler.settings.get('REDIS_START_URLS_KEY')
+        MONGO_COLLECTION = crawler.settings.get('MONGO_COLLECTION')
+        s = cls(REDIS_START_URLS_KEY, MONGO_COLLECTION)
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         return s
 
@@ -37,17 +43,20 @@ class ScrapyWorkerSpiderMiddleware:
     def process_spider_output(self, response, result, spider):
         # Called with the results returned from the Spider, after
         # it has processed the response.
+        
         for item in result:
             if isinstance(item, dict):
-                request = Request(item['url'], method='GET')
-                request_fingerprint = fingerprint(request)
-                seen = spider.redis_req_conn.get(request_fingerprint)
-                if not seen:
-                    spider.logger.info(" [+] Pushing to queue")
-                    spider.redis_req_conn.rpush('queue:requests', json.dumps(item))
-                else:
-                    spider.logger.info(" [+] Request seen")
+                if not self.is_seen(item['url'], spider):
+                    self.redis_conn.rpush(self.REDIS_START_URLS_KEY, json.dumps(item))
             yield item
+
+
+    def is_seen(self, url, spider):
+        request = Request(url, method='GET')
+        request_fingerprint = fingerprint(request)
+        seen = spider.db[self.collection].find_one({"fingerprint": request_fingerprint}, {"_id": 0})
+        return seen
+
 
     def process_spider_exception(self, response, exception, spider):
         # Called when a spider or process_spider_input() method
@@ -118,55 +127,31 @@ class ScrapyWorkerDownloaderMiddleware:
 
 class RedisMiddleware:
 
-    def __init__(self, redis_req_host, redis_req_port, redis_resp_host, redis_resp_port):
-        self.redis_req_host = redis_req_host
-        self.redis_req_port = redis_req_port
-
-        self.redis_resp_host = redis_resp_host
-        self.redis_resp_port = redis_resp_port
-
-        self.redis_req_conn = None
+    def __init__(self, settings):
+        self.redis_resp_conn = get_redis(host='localhost', port=6380)
+        self.client, self.db = get_mongo(settings)
+        self.collection = settings.get('MONGO_COLLECTION')
 
 
     @classmethod
     def from_crawler(cls, crawler):
-        spider = cls(
-            redis_req_host=crawler.settings.get("REDIS_REQ_HOST", 'localhost'),
-            redis_req_port=crawler.settings.get("REDIS_REQ_PORT", 6379),
-
-            redis_resp_host=crawler.settings.get("REDIS_RESP_HOST", 'localhost'),
-            redis_resp_port=crawler.settings.get("REDIS_RESP_PORT", 6380),
-        )
+        spider = cls(crawler.settings)
         crawler.signals.connect(spider.spider_opened, signal=signals.spider_opened)
         crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
         return spider
     
 
     def spider_opened(self, spider):
-        # redis connection for requests
-        self.redis_req_conn = redis.Redis(host=self.redis_req_host, port=self.redis_req_port, db=0)
-        spider.redis_req_conn = self.redis_req_conn
         # redis connection for responses
-        self.redis_resp_conn = redis.Redis(host=self.redis_resp_host, port=self.redis_resp_port, db=0)
         spider.redis_resp_conn = self.redis_resp_conn
+        spider.db = self.db
         spider.logger.info(" [+] Redis connection opened")
 
 
     def spider_closed(self, spider):
-        if self.redis_req_conn:
-            self.redis_req_conn.close()
-            self.redis_resp_conn.close()
-            spider.logger.info(" [+] Redis connection closed")
-
-
-    def process_request(self, request, spider):
-        request_fingerprint = fingerprint(request)
-        seen = self.redis_req_conn.get(request_fingerprint)
-        if seen:
-            spider.logger.info(" [+] Request seen")
-            raise IgnoreRequest()
-        self.redis_req_conn.set(request_fingerprint, request.url, ex=1800)
-        return None
+        # close redis connection for responses
+        self.client.close()
+        spider.logger.info(" [-] DB connection closed")
 
 
     def process_response(self, request, response, spider):
@@ -197,3 +182,13 @@ class RedisMiddleware:
         except json.JSONDecodeError:
             return False
         return True
+    
+
+    def process_request(self, request, spider):
+        request_fingerprint = fingerprint(request)
+        seen = self.db[self.collection].find_one({"fingerprint": request_fingerprint}, {"_id": 0})
+        if seen:
+            spider.logger.info(" [+] Request seen")
+            raise IgnoreRequest()
+        self.db[self.collection].insert_one({"fingerprint": request_fingerprint, "url": request.url})
+        return None
