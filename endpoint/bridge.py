@@ -23,13 +23,8 @@ class ApiWorker():
     async def enqueue_job(self):
         try:
             job = self.prepare_job(self.url, self.job_id)
-            if await self.is_seen():
-                raise DuplicateTaskException()
             await self.reset_stats()
             await asyncio.wait_for(self.redis_req_conn.rpush(self.redis_req_key, job), timeout=5)
-            # await self.redis_req_conn.rpush(self.redis_req_key, job)
-        except DuplicateTaskException as e:
-            return build_response(status="failed", message=e)
         except Exception as e:
             return build_response(status="failed", message=e)
         else:
@@ -53,7 +48,6 @@ class ApiWorker():
     async def reset_stats(self):
         # reset crawl history for a user
         self.db[self.collection].delete_many({"job_id": self.job_id})
-        # await self.redis_resp_conn.set(self.job_id, json.dumps({"pages_count":0, "domain": self.url}), ex=1800) 
         await asyncio.wait_for(self.redis_resp_conn.set(self.job_id, json.dumps({"pages_count":0, "domain": self.url}), ex=1800), timeout=5) 
 
 
@@ -63,11 +57,6 @@ class ApiWorker():
         await self.redis_req_conn.close()
         await self.redis_resp_conn.close()
         return result
-
-
-    async def is_seen(self):
-        if self.db[self.collection].find_one({"job_id": self.job_id}):
-            return True
 
 
     @staticmethod
