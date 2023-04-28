@@ -1,8 +1,10 @@
+import asyncio
 import json
 import redis.asyncio as redis
 from urllib.parse import urlparse
 from models import build_response
 from exceptions import DuplicateTaskException, Task404Exception
+import pymongo
 
 
 
@@ -13,7 +15,9 @@ class ApiWorker():
             setattr(self, key, value)
         self.redis_req_conn = redis.Redis(host='localhost', port=6379, db=0)
         self.redis_resp_conn = redis.Redis(host='localhost', port=6380, db=0)
-        self.redis_req_key = 'queue:requests'
+        self.redis_req_key = 'worker_spider:start_urls'
+        self.collection = 'fingerprints'
+        self.client, self.db = self.get_mongo({"MONGO_URI": "mongodb://root:toor@localhost:27017/", "MONGO_DATABASE": "db", "MONGO_COLLECTION": self.collection})
 
 
     async def enqueue_job(self):
@@ -22,8 +26,11 @@ class ApiWorker():
             if await self.is_seen():
                 raise DuplicateTaskException()
             await self.reset_stats()
-            await self.redis_req_conn.rpush(self.redis_req_key, job)
-        except (DuplicateTaskException, Exception) as e:
+            await asyncio.wait_for(self.redis_req_conn.rpush(self.redis_req_key, job), timeout=5)
+            # await self.redis_req_conn.rpush(self.redis_req_key, job)
+        except DuplicateTaskException as e:
+            return build_response(status="failed", message=e)
+        except Exception as e:
             return build_response(status="failed", message=e)
         else:
             return build_response(status="success", message="task added to queue")
@@ -45,19 +52,22 @@ class ApiWorker():
 
     async def reset_stats(self):
         # reset crawl history for a user
-        await self.redis_resp_conn.set(self.job_id, json.dumps({"pages_count":0, "domain": self.url}), ex=1800) 
+        self.db[self.collection].delete_many({"job_id": self.job_id})
+        # await self.redis_resp_conn.set(self.job_id, json.dumps({"pages_count":0, "domain": self.url}), ex=1800) 
+        await asyncio.wait_for(self.redis_resp_conn.set(self.job_id, json.dumps({"pages_count":0, "domain": self.url}), ex=1800), timeout=5) 
 
 
     async def process_request(self, callback=enqueue_job):
-        return await callback()
+        result = await callback()
+        self.client.close()
+        await self.redis_req_conn.close()
+        await self.redis_resp_conn.close()
+        return result
 
 
     async def is_seen(self):
-        existing_jobs = await self.redis_req_conn.lrange(self.redis_req_key, 0, -1)
-        for job in existing_jobs:
-            job = self.bytes_to_str(job)
-            if job['job_id'] == self.job_id:
-                return True
+        if self.db[self.collection].find_one({"job_id": self.job_id}):
+            return True
 
 
     @staticmethod
@@ -94,5 +104,11 @@ class ApiWorker():
         return cls(**request.dict())
 
 
-
+    @staticmethod
+    def get_mongo(settings):
+        MONGO_URI = settings.get('MONGO_URI')
+        MONGO_DATABASE = settings.get('MONGO_DATABASE')
+        client = pymongo.MongoClient(MONGO_URI)
+        db = client[MONGO_DATABASE]
+        return (client, db)
 

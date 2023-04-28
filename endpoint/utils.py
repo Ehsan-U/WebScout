@@ -12,8 +12,6 @@ async def process_route(request: Union[CrawlRequest, StatsRequest], route):
         result = await worker.process_request(callback=worker.get_stats)
     else:
         result = {"error": "404"}
-    await worker.redis_req_conn.close()
-    await worker.redis_resp_conn.close()
     return result
 
 

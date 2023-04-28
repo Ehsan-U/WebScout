@@ -45,30 +45,24 @@
               data: JSON.stringify({"job_id": job_id}),
               contentType: "application/json; charset=utf-8",
               success: function(data) {
+                console.log(data)
                 const counterValue = data.message.pages_count;
                 const domain = data.message.domain;
-                crawledPages.innerText = counterValue;
                 console.log(counterValue)
                 console.log(domain)
-                if (counterValue == undefined) {
-                    clearInterval(intervalId);
-                    target.innerText = '';
-                    status.innerText = '';
-                    crawledPages.innerText = '';
-                } else if (counterValue !== prevCounterValue) {
+                crawledPages.innerText = counterValue;
+                if (counterValue !== prevCounterValue || data.status == 'failed' || data.status == 'success') {
                     retries = 0;
                     target.innerText = domain;
                     status.innerText = "Crawling";
                     crawledPages.innerText = counterValue;
                     prevCounterValue = counterValue;
                 }
-                else {
-                    retries++;
-                    if (retries === MAX_RETRIES) {
-                        console.log("Finished");
-                        clearInterval(intervalId);
-                        status.innerText = "Finished";
-                    }
+                else (data.status == undefined) {
+                    clearInterval(intervalId);
+                    target.innerText = '';
+                    status.innerText = '';
+                    crawledPages.innerText = '';
                 }
               },
               error: function() {
