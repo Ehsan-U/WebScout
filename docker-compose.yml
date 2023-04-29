@@ -1,4 +1,4 @@
-version: '3'
+version: '3.1'
 
 services:
   redis_req:
@@ -10,3 +10,11 @@ services:
     ports:
       - 6380:6379
 
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: toor
+    ports:
+      - 27017:27017

@@ -46,14 +46,14 @@ class ScrapyWorkerSpiderMiddleware:
         
         for item in result:
             if isinstance(item, dict):
-                if not self.is_seen(item['url'], spider):
+                if not self.is_seen(item['url'], item['meta']['job_id'], spider):
                     self.redis_conn.rpush(self.REDIS_START_URLS_KEY, json.dumps(item))
             yield item
 
 
-    def is_seen(self, url, spider):
+    def is_seen(self, url, job_id, spider):
         request = Request(url, method='GET')
-        request_fingerprint = fingerprint(request)
+        request_fingerprint = fingerprint(request) + job_id.encode('utf-8')
         seen = spider.db[self.collection].find_one({"fingerprint": request_fingerprint}, {"_id": 0})
         return seen
 
@@ -185,10 +185,11 @@ class RedisMiddleware:
     
 
     def process_request(self, request, spider):
-        request_fingerprint = fingerprint(request)
+        job_id = request.meta['job_id']
+        request_fingerprint = fingerprint(request) + job_id.encode('utf-8')
         seen = self.db[self.collection].find_one({"fingerprint": request_fingerprint}, {"_id": 0})
         if seen:
             spider.logger.info(" [+] Request seen")
             raise IgnoreRequest()
-        self.db[self.collection].insert_one({"fingerprint": request_fingerprint, "url": request.url})
+        self.db[self.collection].insert_one({"job_id": job_id, "fingerprint": request_fingerprint})
         return None
