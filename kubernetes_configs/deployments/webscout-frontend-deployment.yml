@@ -16,7 +16,7 @@ spec:
           ports:
             - containerPort: 80
   replicas: 1
-  selecotr:
+  selector:
     matchLabels:
       app: webscout
       name: webscout-frontend-pod

@@ -5,7 +5,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - targetPort: 6380
+    - targetPort: 6379
       port: 6380 
   selector:
     app: myapp

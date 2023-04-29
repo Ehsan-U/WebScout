@@ -14,7 +14,7 @@ spec:
         - name: redis-back-pod
           image: redis
           ports:
-            - containerPort: 6380
+            - containerPort: 6379
   selector:
     matchLabels:
       app: webscout
