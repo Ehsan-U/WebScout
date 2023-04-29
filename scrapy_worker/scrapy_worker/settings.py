@@ -60,7 +60,7 @@ MONGO_URI = 'mongodb://root:toor@localhost:27017'
 MONGO_DATABASE = 'db'
 MONGO_COLLECTION = 'fingerprints'
 LOG_LEVEL=logging.DEBUG
-# LOG_FILE='logs.log'
+LOG_FILE='logs.log'
 POST_PROCESSING = False
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
