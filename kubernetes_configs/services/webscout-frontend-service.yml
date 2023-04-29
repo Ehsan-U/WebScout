@@ -9,4 +9,4 @@ spec:
       port: 80
   selector:
     app: webscout
-    name: webscout-frontend-pod
+    type: frontend

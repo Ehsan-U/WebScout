@@ -9,4 +9,4 @@ spec:
       port: 8000
   selector:
     app: webscout
-    name: webscout-endpoint-pod
+    type: endpoint 

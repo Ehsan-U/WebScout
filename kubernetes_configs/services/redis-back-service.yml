@@ -8,4 +8,5 @@ spec:
     - targetPort: 6379
       port: 6380 
   selector:
-    app: myapp
+    app: webscout
+    type: parsing

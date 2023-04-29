@@ -8,7 +8,7 @@ spec:
       name: webscout-frontend-pod
       labels:
         app: webscout
-        name: webscout-frontend-pod
+        type: frontend
     spec:
       containers:
         - name: webscout-frontend-pod
@@ -19,4 +19,4 @@ spec:
   selector:
     matchLabels:
       app: webscout
-      name: webscout-frontend-pod
+      type: frontend

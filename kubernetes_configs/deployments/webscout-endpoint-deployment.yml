@@ -8,7 +8,7 @@ spec:
       name: webscout-endpoint-pod
       labels:
         app: webscout
-        name: webscout-endpoint-pod
+        type: endpoint
     spec:
       containers:
         - name: webscout-endpoint-pod
@@ -32,4 +32,4 @@ spec:
   selector:
     matchLabels:
       app: webscout
-      name: webscout-endpoint-pod
+      type: endpoint

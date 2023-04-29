@@ -8,14 +8,14 @@ spec:
       name: redis-back-pod
       labels:
         app: webscout
-        name: redis-back-pod
+        type: parsing
     spec:
       containers:
-        - name: redis-back-pod
+        - name: redis-back-con
           image: redis
           ports:
             - containerPort: 6379
   selector:
     matchLabels:
       app: webscout
-      name: redis-back-pod
+      type: parsing
