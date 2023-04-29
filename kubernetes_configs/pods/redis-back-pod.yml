@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-back-pod
+  labels:
+    app: webscout
+    name: redis-back-pod
+spec:
+  containers:
+    - name: redis-back-pod
+      image: redis
+      ports:
+        - containerPort: 6380
+  

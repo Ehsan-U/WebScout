@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-back-deployment
+spec:
+  template:
+    metadata:
+      name: redis-back-pod
+      labels:
+        app: webscout
+        name: redis-back-pod
+    spec:
+      containers:
+        - name: redis-back-pod
+          image: redis
+          ports:
+            - containerPort: 6380
+  selector:
+    matchLabels:
+      app: webscout
+      name: redis-back-pod

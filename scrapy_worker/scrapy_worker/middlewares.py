@@ -128,7 +128,7 @@ class ScrapyWorkerDownloaderMiddleware:
 class RedisMiddleware:
 
     def __init__(self, settings):
-        self.redis_resp_conn = get_redis(host='localhost', port=6380)
+        self.redis_resp_conn = get_redis(host='redis-back', port=6380)
         self.client, self.db = get_mongo(settings)
         self.collection = settings.get('MONGO_COLLECTION')
 

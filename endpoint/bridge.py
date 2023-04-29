@@ -14,7 +14,7 @@ class ApiWorker():
         for key,value in kwargs.items():
             setattr(self, key, value)
         self.redis_req_conn = redis.Redis(host='localhost', port=6379, db=0)
-        self.redis_resp_conn = redis.Redis(host='localhost', port=6380, db=0)
+        self.redis_resp_conn = redis.Redis(host='redis-back', port=6380, db=0)
         self.redis_req_key = 'worker_spider:start_urls'
         self.collection = 'fingerprints'
         self.client, self.db = self.get_mongo({"MONGO_URI": "mongodb://root:toor@localhost:27017/", "MONGO_DATABASE": "db", "MONGO_COLLECTION": self.collection})

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: webscout-frontend-deployment
+spec:
+  template:
+    metadata:
+      name: webscout-frontend-pod
+      labels:
+        app: webscout
+        name: webscout-frontend-pod
+    spec:
+      containers:
+        - name: webscout-frontend-pod
+          image: ehsanu/webscout-frontend
+          ports:
+            - containerPort: 80
+  replicas: 1
+  selecotr:
+    matchLabels:
+      app: webscout
+      name: webscout-frontend-pod

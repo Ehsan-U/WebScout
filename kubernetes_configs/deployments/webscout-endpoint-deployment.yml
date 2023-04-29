@@ -1,0 +1,35 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata:
+  name: webscout-endpoint-deployment
+spec:
+  template:
+    metadata:
+      name: webscout-endpoint-pod
+      labels:
+        app: webscout
+        name: webscout-endpoint-pod
+    spec:
+      containers:
+        - name: webscout-endpoint-pod
+          image: ehsanu/webscout-endpoint
+          ports:
+            - containerPort: 8000
+        - name: redis-front-pod
+          image: redis
+          ports:
+            - containerPort: 6379
+        - name: mongo-pod
+          image: mongo
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: root
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: toor
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webscout
+      name: webscout-endpoint-pod

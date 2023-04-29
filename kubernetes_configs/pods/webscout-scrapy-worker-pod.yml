@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webscout-scrapy-worker-pod
+  labels:
+    app: webscout
+    name: webscout-scrapy-worker-pod
+spec:
+  containers:
+    - name: webscout-scrapy-worker-pod
+      image: ehsanu/webscout-scrapy-worker
