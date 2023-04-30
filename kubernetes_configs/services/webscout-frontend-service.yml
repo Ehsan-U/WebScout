@@ -7,7 +7,7 @@ spec:
   ports:
     - targetPort: 80
       port: 80
-      nodePort: 80
+      nodePort: 30001
   selector:
     app: webscout
     type: frontend
