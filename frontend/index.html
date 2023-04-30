@@ -48,7 +48,7 @@
         if ($('#status').text() !== 'Crawling') {
             clean_it()
             $.ajax({
-            url:  'http://fastendp.default.svc.cluster.local:8000/webscout/crawl',
+            url:  'http://64.225.80.228:8000/webscout/crawl',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
@@ -74,7 +74,7 @@
 
       function poll() {
         $.ajax({
-          url:  'http://fastendp.default.svc.cluster.local:8000/webscout/stats',
+          url:  'http://64.225.80.228:8000/webscout/stats',
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
@@ -113,7 +113,7 @@
 
       function on_reload() {
         $.ajax({
-          url:  'http://fastendp.default.svc.cluster.local:8000/webscout/stats',
+          url:  'http://64.225.80.228:8000/webscout/stats',
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
