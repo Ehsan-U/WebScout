@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment 
 metadata:
-  name: webscout-scrapy-worker-deployment
+  name: scrapy-worker-deployment
 spec:
   template:
     metadata:
-      name: webscout-scrapy-worker-pod
+      name: scrapy-worker-pod
       labels:
         app: webscout
         type: scraping
     spec:
       containers:
-        - name: webscout-scrapy-worker-pod
+        - name: scrapy-worker-con
           image: ehsanu/webscout-scrapy-worker
   replicas: 3
   selector:

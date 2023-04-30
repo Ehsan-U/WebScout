@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment 
 metadata:
-  name: webscout-frontend-deployment
+  name: frontend-deployment
 spec:
   template:
     metadata:
-      name: webscout-frontend-pod
+      name: frontend-pod
       labels:
         app: webscout
         type: frontend
     spec:
       containers:
-        - name: webscout-frontend-pod
+        - name: frontend-con
           image: ehsanu/webscout-frontend
           ports:
             - containerPort: 80
