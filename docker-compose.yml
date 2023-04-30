@@ -1,20 +1,58 @@
-version: '3.1'
+version: "3.8"
+
 
 services:
-  redis_req:
-    image: redis
+  frontend:
+    image: ehsanu/webscout-frontend
     ports:
-      - 6379:6379
-  redis_resp:
+      - 80:80
+    networks:
+      webscout_network:
+        aliases:
+          - frontend
+    depends_on:
+      - fastendp
+    
+  fastendp:
+    image: ehsanu/webscout-endpoint
+    networks:
+      webscout_network:
+        aliases:
+          - fastendp
+    depends_on:
+      - redisfront
+      - redisback
+      - fingers
+  
+  redisfront:
     image: redis
-    ports:
-      - 6380:6379
+    networks:
+      webscout_network:
+        aliases:
+          - redisfront
 
-  mongo:
-    image: mongo
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: toor
-    ports:
-      - 27017:27017
+  redisback:
+    image: redis
+    networks:
+      webscout_network:
+        aliases:
+          - redisback
+  
+  fingers:
+    image: mongo:4.4
+    networks:
+      webscout_network:
+        aliases:
+          - fingers
+
+  scrapyworker:
+    image: ehsanu/webscout-scrapy-worker
+    networks:
+      - webscout_network
+    depends_on:
+      - redisback
+      - fingers
+      - redisfront
+
+networks:
+  webscout_network:
