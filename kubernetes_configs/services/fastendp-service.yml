@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: fastendp
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
     - targetPort: 8000
       port: 8000
