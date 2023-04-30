@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service 
 metadata:
-  name: fastendp-service
+  name: fastendp
 spec:
   type: ClusterIP
   ports:
