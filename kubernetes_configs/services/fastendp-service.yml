@@ -3,11 +3,10 @@ kind: Service
 metadata:
   name: fastendp
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - targetPort: 8000
       port: 8000
-      nodePort: 30002
   selector:
     app: webscout
     type: fastendp 
