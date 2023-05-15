@@ -1,17 +1,18 @@
-from typing import Union
 from urllib.parse import urlparse
-from models import CrawlRequest, StatsRequest
-from bridge import ApiWorker
+import bridge
+from fastapi.exceptions import HTTPException
 
 
-async def process_route(request: Union[CrawlRequest, StatsRequest], route):
-    worker = await ApiWorker().from_request(request)
+async def process_route(request, route):
+    worker = bridge.ApiWorker().from_request(request)
     if route == 'crawl':
         result = await worker.process_request(callback=worker.enqueue_job)
     elif route == 'stats':
         result = await worker.process_request(callback=worker.get_stats)
+    elif route == 'detail':
+        result = await worker.process_request(callback=worker.get_detail)
     else:
-        result = {"error": "404"}
+        raise HTTPException(status_code=404)
     return result
 
 

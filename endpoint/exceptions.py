@@ -1,16 +1,9 @@
 
 
-class DuplicateTaskException(Exception):
-    def __init__(self, message='task already seen'):
-        self.message = message
+async def handle_error(request, exception):
+    """
+    called when an exception is raised.
+    """
+    return {"message": "Resource not found"}
 
-    def __str__(self):
-        return self.message
 
-
-class Task404Exception(Exception):
-    def __init__(self, message='task has not enqueued yet'):
-        self.message = message
-
-    def __str__(self):
-        return self.message

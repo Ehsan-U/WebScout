@@ -58,7 +58,8 @@ DOWNLOADER_MIDDLEWARES = {
 # mongo for storing seen urls (fingerprints)
 MONGO_URI = 'mongodb://root:toor@fingers:27017'
 MONGO_DATABASE = 'db'
-MONGO_COLLECTION = 'fingerprints'
+FINGERPRINTS_COLLECTION = 'fingerprints'
+STATS_COLLECTION = 'stats'
 LOG_LEVEL=logging.DEBUG
 # LOG_FILE='logs.log'
 POST_PROCESSING = False

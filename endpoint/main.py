@@ -1,13 +1,15 @@
-from fastapi import FastAPI
-from routes import router
+import fastapi
+import routes
 from fastapi.middleware.cors import CORSMiddleware
+import exceptions
 
 
-app = FastAPI()
+app = fastapi.FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(router, prefix='/webscout')
+app.add_exception_handler(Exception, exceptions.handle_error)
+app.include_router(routes.router, prefix='/webscout')

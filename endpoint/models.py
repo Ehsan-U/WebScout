@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+import pydantic
 
 
-class CrawlRequest(BaseModel):
+class CrawlRequest(pydantic.BaseModel):
     """
     submit job request
     """
@@ -9,19 +9,16 @@ class CrawlRequest(BaseModel):
     job_id: str
 
 
-class CrawlStats(BaseModel):
+class CrawlStatsRequest(pydantic.BaseModel):
     """
     get crawler stats
     """
     pass
 
 
-class JobStats(BaseModel):
+class JobStatRequest(pydantic.BaseModel):
     """
     get job stats
     """
     job_id: str
 
-
-def build_response(**kwargs):
-    return kwargs

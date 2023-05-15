@@ -22,7 +22,7 @@ class WorkerMiddleware:
     def __init__(self, settings):
         self.frontier = get_redis(host=settings.get('FRONTIER_HOST'), port=settings.get('FRONTIER_PORT'))
         self.REDIS_START_URLS_KEY = settings.get('REDIS_START_URLS_KEY')
-        self.collection = settings.get('MONGO_COLLECTION')
+        self.collection = settings.get('FINGERPRINTS_COLLECTION')
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -82,7 +82,8 @@ class RedisMiddleware:
     def __init__(self, settings):
         self.resq = get_redis(host=settings.get('RESQ_HOST'), port=settings.get('RESQ_PORT'))
         self.client, self.db = get_mongo(settings)
-        self.collection = settings.get('MONGO_COLLECTION')
+        self.fingerprints_collection = settings.get('FINGERPRINTS_COLLECTION')
+        self.stats_collection = settings.get('STATS_COLLECTION')
 
 
     @classmethod
@@ -94,24 +95,22 @@ class RedisMiddleware:
     
 
     def spider_opened(self, spider):
-        # redis connection for responses
         spider.resq = self.resq
         spider.db = self.db
         spider.logger.info(" [+] Redis connection opened")
 
 
     async def spider_closed(self, spider):
-        # close redis connection for responses
         await self.client.close()
         self.resq.close()
         spider.logger.info(" [-] DB connection closed")
 
 
-    def process_response(self, request, response, spider):
+    async def process_response(self, request, response, spider):
         job_id = request.meta['job_id']
-        stats = self.bytes_to_str(self.frontier.get(job_id))
+        stats = await self.db[self.stats_collection].find_one({"job_id": job_id}, {"_id": 0})
         updated_count = self.update_count(stats['pages_count'])
-        self.frontier.set(job_id, json.dumps({"pages_count":updated_count, "domain": stats['domain']}), ex=1800)
+        await self.db[self.stats_collection].insert_one({"job_id": job_id, "pages_count":updated_count, "domain": stats['domain']})
         return response
 
 
@@ -120,29 +119,12 @@ class RedisMiddleware:
         return count
     
 
-    def bytes_to_str(self, obj):
-        if isinstance(obj, bytes):
-            obj = obj.decode('utf-8')
-        if isinstance(obj, str):
-            if self.is_dict(obj):
-                obj = json.loads(obj)
-        return obj
-        
-
-    def is_dict(self, string_content):
-        try:
-            json.loads(string_content)
-        except json.JSONDecodeError:
-            return False
-        return True
-    
-
     async def process_request(self, request, spider):
         job_id = request.meta['job_id']
         request_fingerprint = fingerprint(request) + job_id.encode('utf-8')
-        seen = await self.db[self.collection].find_one({"fingerprint": request_fingerprint}, {"_id": 0})
+        seen = await self.db[self.fingerprints_collection].find_one({"fingerprint": request_fingerprint}, {"_id": 0})
         if seen:
             spider.logger.info(" [+] Request seen")
             raise IgnoreRequest()
-        await self.db[self.collection].insert_one({"job_id": job_id, "fingerprint": request_fingerprint})
+        await self.db[self.fingerprints_collection].insert_one({"job_id": job_id, "fingerprint": request_fingerprint})
         return None
