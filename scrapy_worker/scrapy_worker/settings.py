@@ -46,7 +46,7 @@ ROBOTSTXT_OBEY = False
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 SPIDER_MIDDLEWARES = {
-   "scrapy_worker.middlewares.ScrapyWorkerSpiderMiddleware": 543,
+   "scrapy_worker.middlewares.WorkerMiddleware": 543,
 }
 
 # Enable or disable downloader middlewares
@@ -143,9 +143,10 @@ DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 #REDIS_ITEMS_SERIALIZER = 'json.dumps'
 
 # Specify the host and port to use when connecting to Redis (optional).
-REDIS_HOST = 'redisfront'
-REDIS_PORT = 6379
-
+FRONTIER_HOST = 'redisfront'
+FRONTIER_PORT = 6379
+RESQ_HOST = 'redisback'
+RESQ_PORT = 6380
 # Specify the full Redis URL for connecting (optional).
 # If set, this takes precedence over the REDIS_HOST and REDIS_PORT settings.
 #REDIS_URL = 'redis://user:pass@hostname:9001'

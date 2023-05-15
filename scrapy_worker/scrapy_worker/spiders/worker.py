@@ -14,7 +14,7 @@ class WebScout(RedisSpider):
     def parse(self, response, **kwargs):
         domain = response.meta.get('domain')
         if self.settings.get('POST_PROCESSING'):
-            self.redis_resp_conn.rpush("queue:responses", json.dumps({"text": response.text, "source": response.url}))
+            self.resq.rpush("queue:responses", json.dumps({"text": response.text, "source": response.url}))
         links = LinkExtractor().extract_links(response)
         for link in links:
             url = response.urljoin(link.url)
