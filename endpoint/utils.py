@@ -4,7 +4,7 @@ from fastapi.exceptions import HTTPException
 
 
 async def process_route(request, route):
-    worker = bridge.ApiWorker().from_request(request)
+    worker = bridge.ApiWorker(**request.dict())
     if route == 'crawl':
         result = await worker.process_request(callback=worker.enqueue_job)
     elif route == 'stats':

@@ -38,21 +38,22 @@ class WorkerMiddleware:
         # Should return None or raise an exception.
         return None
 
-    def process_spider_output(self, response, result, spider):
+    async def process_spider_output(self, response, result, spider):
         # Called with the results returned from the Spider, after
         # it has processed the response.
         
-        for item in result:
+        async for item in result:
             if isinstance(item, dict):
-                if not self.is_seen(item['url'], item['meta']['job_id'], spider):
+                seen = await self.is_seen(item['url'], item['meta']['job_id'], spider)
+                if not seen:
                     self.frontier.rpush(self.REDIS_START_URLS_KEY, json.dumps(item))
             yield item
 
 
-    def is_seen(self, url, job_id, spider):
+    async def is_seen(self, url, job_id, spider):
         request = Request(url, method='GET')
         request_fingerprint = fingerprint(request) + job_id.encode('utf-8')
-        seen = spider.db[self.collection].find_one({"fingerprint": request_fingerprint}, {"_id": 0})
+        seen = await spider.db[self.collection].find_one({"fingerprint": request_fingerprint}, {"_id": 0})
         return seen
 
 
@@ -109,8 +110,8 @@ class RedisMiddleware:
     async def process_response(self, request, response, spider):
         job_id = request.meta['job_id']
         stats = await self.db[self.stats_collection].find_one({"job_id": job_id}, {"_id": 0})
-        updated_count = self.update_count(stats['pages_count'])
-        await self.db[self.stats_collection].insert_one({"job_id": job_id, "pages_count":updated_count, "domain": stats['domain']})
+        updated_count = self.update_count(stats['pages_count']) if stats else self.update_count(0)
+        await self.db[self.stats_collection].insert_one({"job_id": job_id, "pages_count":updated_count, "domain": request.meta['domain']})
         return response
 
 

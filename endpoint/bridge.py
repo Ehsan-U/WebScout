@@ -12,15 +12,15 @@ from fastapi.responses import JSONResponse
 
 class ApiWorker():
 
-    def __init__(self, *args, **kwargs):
-        for key, value in kwargs.items():
+    def __init__(self, **kwargs):
+        for key,value in kwargs.items():
             setattr(self, key, value)
         self.job_id = self.create_job_id(self.url)
-        self.frontier = self.get_redis(host=settings.get("FRONTIER_HOST"), port=settings.get("FRONTIER_PORT"))
-        self.resq = self.get_redis(host=settings.get("RESQ_HOST"), port=settings.get("RESQ_PORT"))
-        self.frontier_key = settings.get("REDIS_START_URLS_KEY")
-        self.fingerprints_collection = settings.get('FINGERPRINTS_COLLECTION')
-        self.stats_collection = settings.get('STATS_COLLECTION')
+        self.frontier = self.get_redis(settings.FRONTIER_HOST, settings.FRONTIER_PORT)
+        self.resq = self.get_redis(settings.RESQ_HOST, settings.RESQ_PORT)
+        self.frontier_key = settings.REDIS_START_URLS_KEY
+        self.fingerprints_collection = settings.FINGERPRINTS_COLLECTION
+        self.stats_collection = settings.STATS_COLLECTION
         self.client, self.db = self.get_mongo(settings)
 
 
@@ -28,12 +28,14 @@ class ApiWorker():
         """
         submit job to redis queue
         """
+        if await self.is_seen(job_id):
+            await self.cleanup()
+            raise HTTPException(status_code=409, detail="job already exists")
         try:
-            if await self.is_seen(job_id):
-                raise HTTPException(status_code=409, detail="job already exists")
             job = self.prepare_job(self.url, job_id)
             await asyncio.wait_for(self.frontier.rpush(self.frontier_key, job), timeout=5)
         except Exception as e:
+            await self.cleanup()
             raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -45,6 +47,7 @@ class ApiWorker():
             jobs = await self.db[self.stats_collection].find({}, {"_id": 0}).to_list(length=None)
             return JSONResponse(status_code=200, content={"jobs": jobs})
         except Exception as e:
+            await self.cleanup()
             raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -55,9 +58,11 @@ class ApiWorker():
         try:
             job = await self.db[self.stats_collection].find_one({"job_id": job_id}, {"_id": 0})
             if not job:
+                await self.cleanup()
                 raise HTTPException(status_code=404, detail="job not found")
             return JSONResponse(status_code=200, content=job)
         except Exception as e:
+            await self.cleanup()
             raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -69,14 +74,12 @@ class ApiWorker():
             await self.db[self.fingerprints_collection].delete_many({"job_id": job_id})
             await self.db[self.stats_collection].delete_one({"job_id": job_id})
         except Exception as e:
+            await self.cleanup()
             raise HTTPException(status_code=500, detail=str(e))
 
 
     async def process_request(self, callback=enqueue_job):
         result = await callback(self.job_id)
-        await self.client.close()
-        await self.frontier.close()
-        await self.resq.close()
         return result
 
 
@@ -86,6 +89,7 @@ class ApiWorker():
             if job:            
                 return True
         except Exception as e:
+            await self.cleanup()
             raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -108,25 +112,19 @@ class ApiWorker():
         return json.dumps(data)
 
 
-    @classmethod
-    def from_request(cls, request):
-        return cls(**request.dict())
-
-
-    @staticmethod
-    def get_mongo(settings):
+    def get_mongo(self, settings):
         try:
-            MONGO_URI = settings.get('MONGO_URI')
-            MONGO_DATABASE = settings.get('MONGO_DATABASE')
+            MONGO_URI = settings.MONGO_URI
+            MONGO_DATABASE = settings.MONGO_DATABASE
             client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
             db = client[MONGO_DATABASE]
+            print(" db initiated")
             return (client, db)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
     
-    staticmethod
-    def get_redis(host, port):
+    def get_redis(self, host, port):
         try:
             REDIS_HOST = host
             REDIS_PORT = port
@@ -135,3 +133,12 @@ class ApiWorker():
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
+
+    async def cleanup(self):
+        if self.client:
+            print(f"Client: {self.client}")
+            await self.client.close()
+        if self.frontier:
+            await self.frontier.close()
+        if self.resq:
+            await self.resq.close()

@@ -6,7 +6,6 @@ class CrawlRequest(pydantic.BaseModel):
     submit job request
     """
     url: str
-    job_id: str
 
 
 class CrawlStatsRequest(pydantic.BaseModel):

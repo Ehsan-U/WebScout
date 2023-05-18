@@ -2,57 +2,47 @@ version: "3.8"
 
 
 services:
-  frontend:
-    image: ehsanu/webscout-frontend
-    ports:
-      - 80:80
-    networks:
-      webscout_network:
-        aliases:
-          - frontend
-    depends_on:
-      - fastendp
     
-  fastendp:
+  endpoint:
     image: ehsanu/webscout-endpoint
     networks:
       webscout_network:
         aliases:
-          - fastendp
+          - endpoint
     depends_on:
-      - redisfront
-      - redisback
-      - fingers
+      - frontier
+      - resq
+      - webscoutdb
   
-  redisfront:
+  frontier:
     image: redis
     networks:
       webscout_network:
         aliases:
-          - redisfront
+          - frontier
 
-  redisback:
+  resq:
     image: redis
     networks:
       webscout_network:
         aliases:
-          - redisback
+          - resq
   
-  fingers:
-    image: mongo:4.4
+  webscoutdb:
+    image: mongo
     networks:
       webscout_network:
         aliases:
-          - fingers
+          - webscoutdb
 
-  scrapyworker:
+  worker:
     image: ehsanu/webscout-scrapy-worker
     networks:
       - webscout_network
     depends_on:
-      - redisback
-      - fingers
-      - redisfront
+      - frontier
+      - webscoutdb
+      - resq
 
 networks:
   webscout_network:
