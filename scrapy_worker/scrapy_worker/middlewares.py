@@ -111,7 +111,7 @@ class RedisMiddleware:
         job_id = request.meta['job_id']
         stats = await self.db[self.stats_collection].find_one({"job_id": job_id}, {"_id": 0})
         updated_count = self.update_count(stats['pages_count']) if stats else self.update_count(0)
-        await self.db[self.stats_collection].insert_one({"job_id": job_id, "pages_count":updated_count, "domain": request.meta['domain']})
+        await self.db[self.stats_collection].update_one({"job_id": job_id}, {"$set" :{"pages_count":updated_count, "domain": request.meta['domain']}}, upsert=True)
         return response
 
 

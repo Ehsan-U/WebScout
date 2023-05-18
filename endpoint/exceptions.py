@@ -1,9 +1,12 @@
+from flask import jsonify, json
 
 
-async def handle_error(request, exception):
-    """
-    called when an exception is raised.
-    """
-    return {"message": "Resource not found"}
 
-
+def handle_error(error):
+    response = error.get_response()
+    response.data = json.dumps({
+        "code": error.code,
+        "description": error.description,
+    })
+    response.content_type = "application/json"
+    return response
