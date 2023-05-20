@@ -2,6 +2,8 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import datetime
+from urllib.parse import urlparse
 
 from scrapy import signals
 
@@ -22,7 +24,7 @@ class WorkerMiddleware:
     def __init__(self, settings):
         self.frontier = get_redis(host=settings.get('FRONTIER_HOST'), port=settings.get('FRONTIER_PORT'))
         self.REDIS_START_URLS_KEY = settings.get('REDIS_START_URLS_KEY')
-        self.collection = settings.get('FINGERPRINTS_COLLECTION')
+        self.fingerprints_collection = settings.get('FINGERPRINTS_COLLECTION')
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -41,7 +43,6 @@ class WorkerMiddleware:
     async def process_spider_output(self, response, result, spider):
         # Called with the results returned from the Spider, after
         # it has processed the response.
-        
         async for item in result:
             if isinstance(item, dict):
                 seen = await self.is_seen(item['url'], item['meta']['job_id'], spider)
@@ -49,13 +50,11 @@ class WorkerMiddleware:
                     self.frontier.rpush(self.REDIS_START_URLS_KEY, json.dumps(item))
             yield item
 
-
     async def is_seen(self, url, job_id, spider):
         request = Request(url, method='GET')
         request_fingerprint = fingerprint(request) + job_id.encode('utf-8')
-        seen = await spider.db[self.collection].find_one({"fingerprint": request_fingerprint}, {"_id": 0})
+        seen = await spider.db[self.fingerprints_collection].find_one({"fingerprint": request_fingerprint}, {"_id": 0})
         return seen
-
 
     def process_spider_exception(self, response, exception, spider):
         # Called when a spider or process_spider_input() method
@@ -75,7 +74,6 @@ class WorkerMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
-
 
 
 class RedisMiddleware:
@@ -111,7 +109,7 @@ class RedisMiddleware:
         job_id = request.meta['job_id']
         stats = await self.db[self.stats_collection].find_one({"job_id": job_id}, {"_id": 0})
         updated_count = self.update_count(stats['pages_count']) if stats else self.update_count(0)
-        await self.db[self.stats_collection].update_one({"job_id": job_id}, {"$set" :{"pages_count":updated_count, "domain": request.meta['domain']}}, upsert=True)
+        await self.db[self.stats_collection].update_one({"job_id": job_id}, {"$set" :{"pages_count":updated_count, "domain": request.meta['domain'], "status": "running"}}, upsert=True)
         return response
 
 
@@ -129,3 +127,4 @@ class RedisMiddleware:
             raise IgnoreRequest()
         await self.db[self.fingerprints_collection].insert_one({"job_id": job_id, "fingerprint": request_fingerprint})
         return None
+

@@ -52,8 +52,7 @@ SPIDER_MIDDLEWARES = {
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-#    "scrapy_worker.middlewares.ScrapyWorkerDownloaderMiddleware": 543,
-   "scrapy_worker.middlewares.RedisMiddleware": 543
+   "scrapy_worker.middlewares.RedisMiddleware": 543,
 }
 # mongo for storing seen urls (fingerprints)
 MONGO_URI = 'mongodb://127.0.0.1:27017'

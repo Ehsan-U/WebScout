@@ -1,7 +1,6 @@
 import traceback
 from urllib.parse import urlparse
 from flask import json, request, abort, current_app as app
-from flask import Response
 
 
 
