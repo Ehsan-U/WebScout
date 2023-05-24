@@ -168,3 +168,8 @@ REDIS_START_URLS_KEY = 'worker_spider:start_urls'
 
 # Use other encoding than utf-8 for redis.
 #REDIS_ENCODING = 'latin1'
+
+# breadth first approach
+DEPTH_PRIORITY = 1
+SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleFifoDiskQueue"
+SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
