@@ -1,3 +1,6 @@
+itemadapter==0.8.0
+motor==3.1.2
 pymongo==4.3.3
 redis==4.3.4
+Scrapy==2.8.0
 scrapy_redis==0.7.3

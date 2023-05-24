@@ -4,7 +4,7 @@ version: "3.8"
 services:
     
   endpoint:
-    image: ehsanu/webscout-endpoint
+    image: ehsanu/endpoint:1.0
     networks:
       webscout_network:
         aliases:
@@ -12,7 +12,7 @@ services:
     depends_on:
       - frontier
       - resq
-      - webscoutdb
+      - db
   
   frontier:
     image: redis
@@ -28,21 +28,28 @@ services:
         aliases:
           - resq
   
-  webscoutdb:
+  db:
     image: mongo
     networks:
       webscout_network:
         aliases:
-          - webscoutdb
+          - db
 
   worker:
-    image: ehsanu/webscout-scrapy-worker
+    image: ehsanu/worker:1.0
     networks:
       - webscout_network
     depends_on:
       - frontier
-      - webscoutdb
+      - db
       - resq
+
+  controller:
+    image: ehsanu/controller:1.0
+    networks:
+      - webscout_network
+    depends_on:
+      - db
 
 networks:
   webscout_network:

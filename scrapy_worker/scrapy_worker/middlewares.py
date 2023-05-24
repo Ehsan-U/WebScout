@@ -15,6 +15,7 @@ from scrapy_redis.connection import get_redis
 from scrapy.http import Request
 from scrapy.utils.request import fingerprint
 from scrapy.exceptions import IgnoreRequest
+import datetime
 
 
 class WorkerMiddleware:
@@ -109,7 +110,7 @@ class RedisMiddleware:
         job_id = request.meta['job_id']
         stats = await self.db[self.stats_collection].find_one({"job_id": job_id}, {"_id": 0})
         updated_count = self.update_count(stats['pages_count']) if stats else self.update_count(0)
-        await self.db[self.stats_collection].update_one({"job_id": job_id}, {"$set" :{"pages_count":updated_count, "domain": request.meta['domain'], "status": "running"}}, upsert=True)
+        await self.db[self.stats_collection].update_one({"job_id": job_id}, {"$set" :{"pages_count":updated_count, "domain": request.meta['domain'], "status": "running", "start": request.meta['start']}}, upsert=True)
         return response
 
 

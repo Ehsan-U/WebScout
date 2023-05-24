@@ -5,7 +5,7 @@ import pymongo
 Loop that watches jobs status
 """
 
-MONGO_URI = 'mongodb://127.0.0.1:27017'
+MONGO_URI = 'mongodb://db:27017'
 MONGO_DATABASE = 'db'
 STATS_COLLECTION = 'stats'
 
@@ -25,7 +25,8 @@ def update_jobs():
             else:
                 if status == jobs_status[job_id]:
                     if job.get("status") != 'completed':
-                        db[STATS_COLLECTION].update_one({"job_id": job_id}, {"$set":{"status": "completed"}}, upsert=True)
+                        end = time.time()
+                        db[STATS_COLLECTION].update_one({"job_id": job_id}, {"$set":{"status": "completed", "end": end}}, upsert=True)
                 else:
                     jobs_status[job_id] = status
     except Exception as e:

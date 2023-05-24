@@ -1,7 +1,8 @@
+import time
 import traceback
 from urllib.parse import urlparse
 from flask import json, request, abort, current_app as app
-
+import datetime
 
 
 class ApiWorker():
@@ -91,7 +92,8 @@ class ApiWorker():
             "url": url,
             "meta": {
                 "job_id": job_id,
-                "domain": urlparse(url).netloc
+                "domain": urlparse(url).netloc,
+                "start": time.time()
             }
         }
         return json.dumps(data)

@@ -25,6 +25,7 @@ class WebScout(RedisSpider):
                     'meta': {
                         "job_id": response.meta['job_id'],
                         "domain": domain,
+                        "start": response.meta['start']
                     },
                 }
 

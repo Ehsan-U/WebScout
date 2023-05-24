@@ -55,7 +55,7 @@ DOWNLOADER_MIDDLEWARES = {
    "scrapy_worker.middlewares.RedisMiddleware": 543,
 }
 # mongo for storing seen urls (fingerprints)
-MONGO_URI = 'mongodb://127.0.0.1:27017'
+MONGO_URI = 'mongodb://db:27017'
 MONGO_DATABASE = 'db'
 FINGERPRINTS_COLLECTION = 'fingerprints'
 STATS_COLLECTION = 'stats'
@@ -143,11 +143,9 @@ DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 #REDIS_ITEMS_SERIALIZER = 'json.dumps'
 
 # Specify the host and port to use when connecting to Redis (optional).
-# FRONTIER_HOST = 'frontier'
-FRONTIER_HOST = '127.0.0.1'
+FRONTIER_HOST = 'frontier'
 FRONTIER_PORT = 6379
-# RESQ_HOST = 'resq'
-RESQ_HOST = '127.0.0.1'
+RESQ_HOST = 'resq'
 RESQ_PORT = 6380
 # Specify the full Redis URL for connecting (optional).
 # If set, this takes precedence over the REDIS_HOST and REDIS_PORT settings.
