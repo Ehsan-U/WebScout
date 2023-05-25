@@ -1,6 +1,6 @@
 
-FRONTIER_HOST = 'frontier'
-FRONTIER_PORT = 6379
+REDIS_HOST = 'frontier'
+REDIS_PORT = 6379
 RESQ_HOST = 'resq'
 RESQ_PORT = 6380
 REDIS_START_URLS_KEY = 'worker_spider:start_urls'

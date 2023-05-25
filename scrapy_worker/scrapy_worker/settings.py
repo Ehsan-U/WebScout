@@ -143,8 +143,9 @@ DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 #REDIS_ITEMS_SERIALIZER = 'json.dumps'
 
 # Specify the host and port to use when connecting to Redis (optional).
-FRONTIER_HOST = 'frontier'
-FRONTIER_PORT = 6379
+REDIS_HOST = 'frontier'
+REDIS_PORT = 6379
+
 RESQ_HOST = 'resq'
 RESQ_PORT = 6380
 # Specify the full Redis URL for connecting (optional).

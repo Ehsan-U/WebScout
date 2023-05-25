@@ -13,6 +13,8 @@ services:
       - frontier
       - resq
       - db
+    ports:
+      - 5000:5000
   
   frontier:
     image: redis
@@ -20,6 +22,8 @@ services:
       webscout_network:
         aliases:
           - frontier
+    ports:
+      - 6379:6379
 
   resq:
     image: redis
@@ -27,6 +31,8 @@ services:
       webscout_network:
         aliases:
           - resq
+    ports:
+      - 6380:6379
   
   db:
     image: mongo
@@ -34,6 +40,8 @@ services:
       webscout_network:
         aliases:
           - db
+    ports:
+      - 27017:27017
 
   worker:
     image: ehsanu/worker:1.0
@@ -43,6 +51,7 @@ services:
       - frontier
       - db
       - resq
+
 
   controller:
     image: ehsanu/controller:1.0

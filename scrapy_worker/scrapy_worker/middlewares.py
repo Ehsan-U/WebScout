@@ -23,7 +23,7 @@ class WorkerMiddleware:
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
     def __init__(self, settings):
-        self.frontier = get_redis(host=settings.get('FRONTIER_HOST'), port=settings.get('FRONTIER_PORT'))
+        self.frontier = get_redis(host=settings.get("REDIS_HOST"), port=settings.get("REDIS_PORT"))
         self.REDIS_START_URLS_KEY = settings.get('REDIS_START_URLS_KEY')
         self.fingerprints_collection = settings.get('FINGERPRINTS_COLLECTION')
 

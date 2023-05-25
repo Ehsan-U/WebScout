@@ -4,7 +4,6 @@ from scrapy_redis.spiders import RedisSpider
 from urllib.parse import urlparse
 import json
 warnings.filterwarnings('ignore')
-from scrapy_redis.utils import bytes_to_str
 
 
 
