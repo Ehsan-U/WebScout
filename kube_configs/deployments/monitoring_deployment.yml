@@ -4,15 +4,22 @@ metadata:
   name: monitoring-deployment
 spec:
   template:
-   metadata:
+    metadata:
      name: monitoring-pod
      labels:
        app: webscout
        type: monitoring
-   spec:
+    spec:
      containers:
        - name: monitoring-con
-         image: ehsanu/controller
+         image: ehsanu/controller:1.0
+         volumeMounts:
+           - mountPath: /etc/webscout
+             name: config-vol
+     volumes:
+       - name: config-vol
+         configMap:
+           name: webscout-config
   replicas: 1
   selector:
     matchLabels:
