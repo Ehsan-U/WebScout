@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-deployment
+spec:
+  template:
+    metadata:
+      name: worker-pod
+      labels:
+        app: webscout
+        type: worker
+    spec:
+      containers:
+        - name: worker-con
+          image: ehsanu/worker:1.0
+          volumeMounts:
+            - name: config-vol
+              # so complete path will become /etc/webscout/<key> , used by app
+              mountPath: /etc/webscout
+      volumes:
+        - name: config-vol
+          # associate config-vol with a configmap
+          configMap:
+            name: webscout-config
+  replicas: 5
+  selector:
+    matchLabels:
+      app: webscout
+      type: worker

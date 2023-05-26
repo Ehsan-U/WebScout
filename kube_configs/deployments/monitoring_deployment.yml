@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-deployment
+spec:
+  template:
+   metadata:
+     name: monitoring-pod
+     labels:
+       app: webscout
+       type: monitoring
+   spec:
+     containers:
+       - name: monitoring-con
+         image: ehsanu/controller
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webscout
+      type: monitoring

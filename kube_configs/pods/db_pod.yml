@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-pod
+  labels:
+    app: webscout
+    type: db
+spec:
+  containers:
+    - name: db-con
+      image: mongo
+      ports:
+        - containerPort: 27017

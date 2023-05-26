@@ -1,14 +1,13 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: redis-back-pod
+  name: frontier-pod
   labels:
     app: webscout
-    name: redis-back-pod
+    type: frontier
 spec:
   containers:
-    - name: redis-back-pod
+    - name: frontier-con
       image: redis
       ports:
-        - containerPort: 6380
-  
+        - containerPort: 6379

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: resq-pod
+  labels:
+    app: webscout
+    type: resq
+spec:
+  containers:
+    - name: resq-con
+      image: redis
+      ports:
+        - containerPort: 6379

@@ -1,21 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redisfront-deployment
+  name: resq-deployment
 spec:
   template:
     metadata:
-      name: redisfront-pod
+      name: resq-pod
       labels:
         app: webscout
-        type: starturls
+        type: resq
     spec:
       containers:
-        - name: redisfront-con
+        - name: frontier-con
           image: redis
           ports:
             - containerPort: 6379
+  replicas: 1
   selector:
     matchLabels:
       app: webscout
-      type: starturls
+      type: resq

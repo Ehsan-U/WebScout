@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: endpoint-deployment
+spec:
+  template:
+    metadata:
+      name: endpoint-pod
+      labels:
+        app: webscout
+        type: endpoint
+    spec:
+      containers:
+        - name: endpoint-con
+          image: ehsanu/endpoint:1.0
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: config-vol
+              mountPath: /etc/webscout
+      volumes:
+        - name: config-vol
+          configMap:
+            name: webscout-config
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webscout
+      type: endpoint

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontier-deployment
+spec:
+  template:
+    metadata:
+      name: frontier-pod
+      labels:
+        app: webscout
+        type: frontier
+    spec:
+      containers:
+        - name: frontier-con
+          image: redis
+          ports:
+            - containerPort: 6379
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webscout
+      type: frontier

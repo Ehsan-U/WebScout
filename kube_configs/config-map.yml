@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webscout-config
+data:
+  # 'config' the key
+  config: |
+    {
+      "REDIS_HOST": "frontier",
+      "REDIS_PORT": 6379,
+      "RESQ_HOST": "resq",
+      "RESQ_PORT": 6380,
+      "MONGO_URI": "mongodb://db:27017",
+      "MONGO_DATABASE": "db"
+    }
+

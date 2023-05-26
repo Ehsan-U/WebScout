@@ -1,12 +1,12 @@
 apiVersion: v1
-kind: Service 
+kind: Service
 metadata:
-  name: fastendp
+  name: endpoint
 spec:
   type: LoadBalancer
   ports:
-    - targetPort: 8000
-      port: 8000
+    - port: 80
+      targetPort: 5000
   selector:
     app: webscout
-    type: fastendp 
+    type: endpoint

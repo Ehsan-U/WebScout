@@ -1,21 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redisback-deployment
+  name: db-deployment
 spec:
   template:
     metadata:
-      name: redisback-pod
+      name: db-pod
       labels:
         app: webscout
-        type: parsing
+        type: db
     spec:
       containers:
-        - name: redisback-con
-          image: redis
+        - name: db-con
+          image: mongo
           ports:
-            - containerPort: 6379
+            - containerPort: 27017
+  replicas: 1
   selector:
     matchLabels:
       app: webscout
-      type: parsing
+      type: db
